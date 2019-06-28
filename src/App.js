@@ -38,11 +38,12 @@ class App extends Component {
         if (navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(function (stream) {
+                    const video = document.querySelector('videoElement');
                     const videoTracks = stream.getVideoTracks();
                         console.log('Got stream with constraints:', constraints);
                         console.log(`Using video device: ${videoTracks[0].label}`);
                         window.stream = stream; // make variable available to browser console
-                        this.video.srcObject = stream;
+                        video.srcObject = stream;
                     // this.video.srcObject = stream;
                     // this.setState({
                     //     videoStream: stream.active
