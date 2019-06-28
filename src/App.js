@@ -69,7 +69,6 @@ class App extends Component {
                   </div>
 
               </div>
-                <div>{this.state.videoStream.toString() }123 </div>
 
             </div>
         );
