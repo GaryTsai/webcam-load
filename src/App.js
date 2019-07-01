@@ -1,83 +1,77 @@
 import React, {Component} from 'react';
-const constraints = {
-    audio: false,
-    video: true
-};
+
 class App extends Component {
     constructor(props) {
         super(props);
+        this.constraints = window.constraints = {
+            audio: false,
+            video: {width: {exact: 1920}, height: {exact: 1080}}
+        };
         this.state = {
             load: false,
+            error:false,
             errorMessage:''
-        }
-
-
+        };
     }
 
-    // handleOpen=(stream)=>{
-    //     const videoTracks = stream.getVideoTracks();
-    //     console.log('Got stream with constraints:', constraints);
-    //     console.log(`Using video device: ${videoTracks[0].label}`);
-    //     window.stream = stream; // make variable available to browser console
-    //     this.video.srcObject = stream;
-    // }
-    // handleError=(error)=>{
-    //     if (error.name === 'ConstraintNotSatisfiedError') {
-    //         let v = constraints.video;
-    //         this.errorMsg(`The resolution ${v.width.exact}x${v.height.exact} px is not supported by your device.`);
-    //     } else if (error.name === 'PermissionDeniedError') {
-    //         this.rrorMsg('Permissions have not been granted to use your camera and ' +
-    //             'microphone, you need to allow the page access to your devices in ' +
-    //             'order for the demo to work.');
-    //     }
-    //     this.errorMsg(`getUserMedia error: ${error.name}`, error);
-    // }
-    create =(e)=>
+
+    componentDidMount() {
+            this.create();
+    }
+
+    create =()=>
     {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia(this.constraints)
+                .then(this.successCallback)
+                .catch(this.errorCallback);
+        }
+    }
+    successCallback=(stream)=>{
+        const video = document.querySelector('#videoElement');
 
-        if (navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia(constraints)
-                .then(function (stream) {
-                    const video = document.querySelector('videoElement');
-                    const videoTracks = stream.getVideoTracks();
-                        console.log('Got stream with constraints:', constraints);
-                        console.log(`Using video device: ${videoTracks[0].label}`);
-                        window.stream = stream; // make variable available to browser console
-                        video.srcObject = stream;
-                    // this.video.srcObject = stream;
-                    // this.setState({
-                    //     videoStream: stream.active
-                    // })
-                })
-                .catch(function (err0r) {
-                    console.log(err0r);
-                        // if (error.name === 'ConstraintNotSatisfiedError') {
-                        //     let v = constraints.video;
-                        //
-                        //     errMessage =`The resolution ${v.width.exact}x${v.height.exact} px is not supported by your device.`
-                        // } else if (error.name === 'PermissionDeniedError') {
-                        //     this.rrorMsg('Permissions have not been granted to use your camera and ' +
-                        //         'microphone, you need to allow the page access to your devices in ' +
-                        //         'order for the demo to work.');
-                        // }
-                        // errorMsg(`getUserMedia error: ${error.name}`, error);
-                    // this.setState({
-                    //     errorMessage: "Some thing wrong"
-                    // })
+        let videoTracks = stream.getVideoTracks();
+            console.log('Got stream with constraints:', this.constraints);
 
-                });
+            console.log('videoTracks' + videoTracks[0]);//add
+
+            console.log('Using video device: ' + videoTracks[0].label);
+            console.log('stream' + stream);//add
+            console.log('stream id' + stream.id);//add
+
+            stream.onremovetrack = function() {
+                console.log('Stream ended');
+            };
+            window.stream = stream; // make variable available to browser console
+            video.srcObject = stream;
+        console.log('stream.active: ',stream.active);
+        console.log('video stream success');
+
+        this.setState({
+            load:stream.active
+        })
+    }
+    errorCallback=(error)=>{
+        console.log(error,error.name);
+        let errorMsg = 'getUserMedia error:' + error.name;
+        if (error.name === 'ConstraintNotSatisfiedError') {
+                errorMsg='The resolution ' + this.constraints.video.width.exact + 'x' +
+                    this.constraints.video.width.exact + ' px is not supported by your device.'
+            } else if (error.name === 'PermissionDeniedError') {
+                errorMsg='Permissions have not been granted to use your camera and ' +
+                    'microphone, you need to allow the page access to your devices in ' +
+                    'order for the demo to work.';
+            }
+        if(error !=="undefined"){
+            console.log(error);
 
         }
-
+            this.setState({
+                error:true,
+                errorMessage:errorMsg,
+            })
     }
-    // errorMsg=(msg, error)=> {
-    //     const errorElement = document.querySelector('#errorMsg');
-    //     errorElement.innerHTML += `<p>${msg}</p>`;
-    //     if (typeof error !== 'undefined') {
-    //         console.error(error);
-    //     }
-    // }
-    release =(e)=> {
+    videoRelease =()=> {
         let stream = this.video.srcObject;
         let tracks = stream.getTracks();
 
@@ -86,6 +80,9 @@ class App extends Component {
             track.stop();
         }
         this.video.srcObject = null;
+        this.setState({
+            load:stream.active
+        })
     }
     render() {
       const container =  {
@@ -98,7 +95,6 @@ class App extends Component {
           display: 'block',
         width: '800px',
       height: '450px',
-      backgroundColor: '#666'
     }
 
         const btn_style={
@@ -109,15 +105,13 @@ class App extends Component {
         return (
             <div>
               <div style={container}>
-
-                  { !this.state.errorMessage &&<video autoPlay={true} ref={video => this.video =video} id="videoElement"style={videoElement}>
+                  { this.state.error && <div id="errorMsg">Error Message: {this.state.errorMessage}</div>}
+                  {  <video autoPlay={true}  ref={video => this.video =video} id="videoElement"style={videoElement}>
                      </video>
                   }
                   <div>
-                  { !this.state.load  &&
-                  <button type='button'  style={btn_style} onClick={event => this.create(event)}>create stream</button>}
-                  { this.state.load &&
-                  <button type='button' style={btn_style} onClick={event => this.release(event)}>release stream</button>}
+                      {  !this.state.load && !this.state.error && <button type='button'  style={btn_style} onClick={event => this.create(event)}>create stream</button>}
+                      { this.state.load &&   <button type='button' style={btn_style} onClick={event => this.videoRelease(event)}>release stream</button>}
                   </div>
 
               </div>
