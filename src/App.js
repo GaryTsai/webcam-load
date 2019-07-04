@@ -5,7 +5,7 @@ class App extends Component {
         super(props);
         //
         this.constraints = window.constraints = {
-            audio: true,
+            audio: false,
             video: {  facingMode: "user" ,width: {exact: 1920}, height: {exact: 1080}}
         };
         this.state = {
@@ -89,6 +89,7 @@ class App extends Component {
             pause:true,
             load:stream.active
         })
+        console.log(this.state.load);
     }
     render() {
       const container =  {
