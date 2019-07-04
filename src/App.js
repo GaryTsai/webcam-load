@@ -1,25 +1,27 @@
 import React, {Component} from 'react';
-
+import  'recorderjs';
 class App extends Component {
     constructor(props) {
         super(props);
+        //
         this.constraints = window.constraints = {
-            audio: false,
-            video: {width: {exact: 1920}, height: {exact: 1080}}
+            audio: true,
+            video: {  facingMode: "user" ,width: {exact: 1920}, height: {exact: 1080}}
         };
         this.state = {
             load: false,
             error:false,
+            pause:false,
             errorMessage:''
         };
     }
 
 
     componentDidMount() {
-            this.create();
+            this.initVideo();
     }
 
-    create =()=>
+    initVideo =()=>
     {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia(this.constraints)
@@ -32,25 +34,27 @@ class App extends Component {
 
         let videoTracks = stream.getVideoTracks();
             console.log('Got stream with constraints:', this.constraints);
-
             console.log('videoTracks' + videoTracks[0]);//add
-
             console.log('Using video device: ' + videoTracks[0].label);
             console.log('stream' + stream);//add
             console.log('stream id' + stream.id);//add
-
+            console.log('stream.active: ',stream.active);
             stream.onremovetrack = function() {
                 console.log('Stream ended');
             };
             window.stream = stream; // make variable available to browser console
-            video.srcObject = stream;
-        console.log('stream.active: ',stream.active);
+            video.srcObject = stream;//srcObject receive media object
+
+
         console.log('video stream success');
 
         this.setState({
+            pause:false,
             load:stream.active
         })
+
     }
+
     errorCallback=(error)=>{
         console.log(error,error.name);
         let errorMsg = 'getUserMedia error:' + error.name;
@@ -79,8 +83,10 @@ class App extends Component {
             let track = tracks[i];
             track.stop();
         }
+        console.log('stream.active:',stream.active);
         this.video.srcObject = null;
         this.setState({
+            pause:true,
             load:stream.active
         })
     }
@@ -110,7 +116,7 @@ class App extends Component {
                      </video>
                   }
                   <div>
-                      {  !this.state.load && !this.state.error && <button type='button'  style={btn_style} onClick={event => this.create(event)}>create stream</button>}
+                      {  !this.state.load && this.state.pause && !this.state.error && <button type='button'  style={btn_style} onClick={event => this.initVideo(event)}>create stream</button>}
                       { this.state.load &&   <button type='button' style={btn_style} onClick={event => this.videoRelease(event)}>release stream</button>}
                   </div>
 
