@@ -6,7 +6,7 @@ class App extends Component {
         //
         this.constraints = window.constraints = {
             audio: false,
-            video: {  facingMode: "user" ,width: {exact: 1920}, height: {exact: 1080}}
+            video: {  facingMode: 'environment' ,width: {exact: 1920}, height: {exact: 1080}}
         };
         this.state = {
             load: false,
@@ -78,12 +78,10 @@ class App extends Component {
     videoRelease =()=> {
         let stream = this.video.srcObject;
         let tracks = stream.getTracks();
-
         for (let i = 0; i < tracks.length; i++) {
             let track = tracks[i];
             track.stop();
         }
-        console.log('stream.active:',stream.active);
         this.video.srcObject = null;
         this.setState({
             pause:true,
