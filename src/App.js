@@ -1,12 +1,11 @@
 import React, {Component} from 'react';
-import  'recorderjs';
 class App extends Component {
     constructor(props) {
         super(props);
         //
         this.constraints = window.constraints = {
             audio: false,
-            video: {  facingMode: 'environment' ,width: {exact: 1920}, height: {exact: 1080}}
+            video: {  width: {exact: 960}, height: {exact: 540}, facingMode: 'user'}
         };
         this.state = {
             load: false,
